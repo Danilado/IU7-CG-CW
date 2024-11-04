@@ -1,0 +1,30 @@
+% !TEX root = ./report.tex
+
+\input{parts/00_config}
+
+\begin{document}
+
+\includepdf[pages={1}]{parts/01_title.pdf}
+\setcounter{page}{2}
+
+\include{parts/02_abstract}
+
+\begingroup
+\renewcommand{\vspace}[2]{}% Gobble 2 arguments after \vspace
+\def\contentsname{\begin{center}СОДЕРЖАНИЕ\end{center}}
+\tableofcontents
+\endgroup
+
+\include{parts/03_definitions}
+
+\include{parts/04_abbreviations}
+
+\include{parts/05_intro}
+
+\include{parts/06_analytic}
+
+\def\bibname{\begin{center}\Large СПИСОК ИСПОЛЬЗОВАННЫХ ИСТОЧНИКОВ\end{center}}
+
+\include{parts/materials}
+
+\end{document}
