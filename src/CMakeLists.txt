@@ -4,7 +4,6 @@ project(lab_03 VERSION 0.1 LANGUAGES CXX)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(HEADER_LIST
-"${lab_03_SOURCE_DIR}/external/nlohmann_json/single_include/nlohmann/json.hpp"
 "${lab_03_SOURCE_DIR}/inc/app.hpp"
 "${lab_03_SOURCE_DIR}/inc/mainwindow.hpp"
 )
@@ -20,6 +19,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 find_package(TBB REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 set(CMAKE_AUTOUIC_SEARCH_PATHS
     ui
@@ -28,8 +28,6 @@ set(CMAKE_AUTOUIC_SEARCH_PATHS
 set( CMAKE_CXX_FLAGS "-Iinc")
 
 add_library(main SHARED
-external/nlohmann_json/single_include/nlohmann/json.hpp
-
 src/app.cpp
 
 src/camera/BasePTSCAdapter.cpp
@@ -75,6 +73,7 @@ src/io/SourceSolution.cpp
 src/io/DestinationSolution.cpp
 
 src/jsonAdapter/JsonAdapterSolution.cpp
+src/jsonAdapter/BaseJSONAdapter.cpp
 src/jsonAdapter/nlohmannJSONAdapter.cpp
 
 src/object/Object.cpp
@@ -118,9 +117,6 @@ src/visitor/TransformObjectVisitor.cpp
 src/visitor/BoundingBoxVisitor.cpp
 src/visitor/ShadowMapVisitor.cpp
 
-src/jsonAdapter/BaseJSONAdapter.cpp
-src/jsonAdapter/nlohmannJSONAdapter.cpp
-
 src/mainwindow.cpp
 ui/mainwindow.ui
 ${HEADER_LIST})
@@ -144,10 +140,14 @@ src/object
 src/scene
 src/visitor
 src/math
-external/nlohmann_json/single_include/nlohmann/
 )
 
-target_link_libraries(main PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(main 
+    PRIVATE 
+        Qt${QT_VERSION_MAJOR}::Widgets
+        nlohmann_json::nlohmann_json
+        TBB::tbb
+    )
 target_compile_features(main PUBLIC cxx_std_20)
 target_compile_definitions(main PRIVATE QT_NO_KEYWORDS)
 
@@ -156,10 +156,10 @@ src/mainwindow.cpp
 ui/mainwindow.ui
 )
 
-add_executable(lab_03 src/main.cpp ui/mainwindow.ui)
-target_compile_features(lab_03 PRIVATE cxx_std_20)
-target_link_libraries(lab_03 PRIVATE main Qt${QT_VERSION_MAJOR}::Widgets TBB::tbb)
+add_executable(app src/main.cpp ui/mainwindow.ui)
+target_compile_features(app PRIVATE cxx_std_20)
+target_link_libraries(app PRIVATE main Qt${QT_VERSION_MAJOR}::Widgets)
 
 if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(lab_03)
+    qt_finalize_executable(app)
 endif()

@@ -1,9 +1,9 @@
 #ifndef NLOHMANN_JSON_ADAPTER_HPP
 #define NLOHMANN_JSON_ADAPTER_HPP
 
-#include "../external/nlohmann_json/single_include/nlohmann/json.hpp"
 #include "BaseJSONAdapter.hpp"
 #include "BaseModelData.hpp"
+#include <nlohmann/json.hpp>
 
 class NlohmannJsonAdapter : public BaseJsonAdapter {
 private:

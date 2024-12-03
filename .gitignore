@@ -5,8 +5,8 @@
 *.aux
 *.fdb_latexmk
 *.fls
+*.user
 svg-inkscape
 
 build
 .vscode
-src/external
