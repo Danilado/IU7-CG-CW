@@ -80,6 +80,12 @@ public:
 
   TransformationMatrix getOffset() const;
   TransformationMatrix getNegOffset() const;
+
+  static TransformationMatrix lookAt(const Point3D &eye, const Point3D &target,
+                                     const Point3D &up);
+
+  static TransformationMatrix ortho(double left, double right, double bottom,
+                                    double top, double zNear, double zFar);
 };
 
 class TranslationMatrix : public TransformationMatrix {

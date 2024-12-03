@@ -13,7 +13,7 @@ public:
   const Point3D &getP2() const { return p2; }
   const Point3D &getP3() const { return p3; }
 
-private:
+protected:
   Point3D p1, p2, p3;
   Point3D normal;
 };

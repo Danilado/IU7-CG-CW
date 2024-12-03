@@ -17,8 +17,7 @@ public:
   virtual void drawPolygon(const std::vector<std::shared_ptr<Point2D>> &points,
                            const Color &color) = 0;
   virtual std::pair<size_t, size_t> getResolution() const = 0;
-  virtual void setImage(const std::vector<std::vector<Color>> &img,
-                        const std::vector<std::vector<double>> &brightness) = 0;
+  virtual void setImage(const std::vector<std::vector<Color>> &img) = 0;
   virtual void clear() = 0;
 };
 

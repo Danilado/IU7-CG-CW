@@ -2,7 +2,7 @@
 #define POINT_2D_HPP
 
 class Point2D {
-protected:
+public:
   double x;
   double y;
 
@@ -17,6 +17,7 @@ public:
   double get_y() const noexcept;
   void set_y(double n) noexcept;
 
+  Point2D &operator=(const Point2D &other);
   Point2D operator-() const;
 };
 

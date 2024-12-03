@@ -41,13 +41,18 @@ std::pair<size_t, size_t> QtDrawer::getResolution() const {
   return {width, height};
 }
 
-void QtDrawer::setImage(const std::vector<std::vector<Color>> &img,
-                        const std::vector<std::vector<double>> &brightness) {
+void QtDrawer::setImage(const std::vector<std::vector<Color>> &img) {
   QImage image(img[0].size(), img.size(), QImage::Format_RGB32);
 
   for (size_t y = 0; y < img.size(); ++y)
-    for (size_t x = 0; x < img[0].size(); ++x)
+    for (size_t x = 0; x < img[0].size(); ++x) {
+      if (img[y][x].r < 0 || img[y][x].r > 255 || img[y][x].g < 0 ||
+          img[y][x].g > 255 || img[y][x].b < 0 || img[y][x].b > 255) {
+        qDebug() << img[y][x].r << img[y][x].g << img[y][x].b;
+        throw "ZHOPA";
+      }
       image.setPixelColor(x, y, QColor(img[y][x].r, img[y][x].g, img[y][x].b));
+    }
 
   QPixmap pixmap = QPixmap::fromImage(image);
 

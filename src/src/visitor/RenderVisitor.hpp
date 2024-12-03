@@ -4,6 +4,9 @@
 #include "BaseDrawer.hpp"
 #include "BasePTSCAdapter.hpp"
 #include "BaseVisitor.hpp"
+#include "MyPixmap.hpp"
+#include "ShadowMap.hpp"
+#include <tbb/concurrent_vector.h>
 
 class RenderVisitor : public BaseVisitor {
 private:
@@ -11,8 +14,10 @@ private:
   std::shared_ptr<BaseDrawer> ctx;
 
   std::vector<std::vector<Color>> colors;
-  std::vector<std::vector<double>> shade;
   std::vector<std::vector<double>> depth;
+  tbb::concurrent_vector<MyPixmap> pixmaps;
+
+  std::shared_ptr<ShadowMap> smap;
 
 public:
   RenderVisitor() = delete;

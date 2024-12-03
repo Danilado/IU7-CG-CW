@@ -93,6 +93,8 @@ src/math/Point2D.cpp
 src/math/Point3D.cpp
 src/math/Plane.cpp
 src/math/Face.cpp
+src/math/Triangle.cpp
+src/math/ShadowMap.cpp
 src/math/TransformationMatrix.cpp
 src/math/MyMath.cpp
 
@@ -113,6 +115,8 @@ src/visitor/RotateObjectVisitor.cpp
 src/visitor/ScaleObjectVisitor.cpp
 src/visitor/TranslateObjectVisitor.cpp
 src/visitor/TransformObjectVisitor.cpp
+src/visitor/BoundingBoxVisitor.cpp
+src/visitor/ShadowMapVisitor.cpp
 
 src/jsonAdapter/BaseJSONAdapter.cpp
 src/jsonAdapter/nlohmannJSONAdapter.cpp

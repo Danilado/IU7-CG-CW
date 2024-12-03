@@ -303,3 +303,47 @@ TransformationMatrix::multiply(std::array<double, 4> &point) const {
 
   return result;
 }
+
+TransformationMatrix TransformationMatrix::lookAt(const Point3D &eye,
+                                                  const Point3D &target,
+                                                  const Point3D &up) {
+  Point3D f = (target - eye).normalize();
+  Point3D r = (f % up).normalize();
+  Point3D u = r % f;
+
+  TransformationMatrix result;
+  result.set(0, 0, r.get_x());
+  result.set(0, 1, r.get_y());
+  result.set(0, 2, r.get_z());
+  result.set(1, 0, u.get_x());
+  result.set(1, 1, u.get_y());
+  result.set(1, 2, u.get_z());
+  result.set(2, 0, f.get_x());
+  result.set(2, 1, f.get_y());
+  result.set(2, 2, f.get_z());
+
+  result.set(0, 3, -r * eye);
+  result.set(1, 3, -u * eye);
+  result.set(2, 3, -f * eye);
+
+  result.set(3, 3, 1.0);
+
+  return result;
+}
+
+TransformationMatrix TransformationMatrix::ortho(double left, double right,
+                                                 double bottom, double top,
+                                                 double zNear, double zFar) {
+  TransformationMatrix result;
+
+  result.set(0, 0, 2.0 / (right - left));
+  result.set(1, 1, 2.0 / (top - bottom));
+  result.set(2, 2, -2.0 / (zFar - zNear));
+  result.set(3, 3, 1.0);
+
+  result.set(0, 3, -(right + left) / (right - left));
+  result.set(1, 3, -(top + bottom) / (top - bottom));
+  result.set(2, 3, -(zFar + zNear) / (zFar - zNear));
+
+  return result;
+}

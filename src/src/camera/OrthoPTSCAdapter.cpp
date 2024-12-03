@@ -12,7 +12,8 @@ double OrthoPTSCAdapter::shadyExpFunc(double x) {
 std::shared_ptr<Point2D> OrthoPTSCAdapter::convert(const Point3D &pt) {
   // Point3D tmppt = transformPoint(pt);
   double fovl = 1350;
-  double persp_coeff = (fovl / shadyExpFunc(fovl + pt.get_z() - 1350));
+  // double persp_coeff = (fovl / shadyExpFunc(fovl + pt.get_z() - 1350));
+  double persp_coeff = (fovl / pt.get_z());
   double resx = persp_coeff * pt.get_x();
   double resy = persp_coeff * pt.get_y();
 

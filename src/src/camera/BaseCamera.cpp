@@ -28,15 +28,6 @@ void BaseCamera::rotate(double horizontal, double vertical) {
 }
 
 void BaseCamera::apply() {
-  Point3D fwd(cos(pitch) * sin(yaw), sin(pitch), cos(pitch) * cos(yaw));
-  fwd = fwd.normalize();
-
-  Point3D tmpup(0, 1, 0);
-
-  Point3D right = (fwd % tmpup).normalize();
-
-  Point3D up = (fwd % right).normalize();
-
   TransformationMatrix res;
 
   res.translate(-origin);

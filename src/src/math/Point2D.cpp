@@ -7,3 +7,8 @@ double Point2D::get_y() const noexcept { return y; }
 void Point2D::set_y(double n) noexcept { y = n; }
 
 Point2D Point2D::operator-() const { return Point2D(-x, -y); }
+Point2D &Point2D::operator=(const Point2D &other) {
+  x = other.x;
+  y = other.y;
+  return *this;
+}

@@ -23,8 +23,7 @@ public:
   void clear() override;
 
   std::pair<size_t, size_t> getResolution() const override;
-  void setImage(const std::vector<std::vector<Color>> &img,
-                const std::vector<std::vector<double>> &brightness) override;
+  void setImage(const std::vector<std::vector<Color>> &img) override;
 };
 
 #endif

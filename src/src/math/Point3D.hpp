@@ -4,7 +4,7 @@
 #include "Point2D.hpp"
 
 class Point3D : public Point2D {
-private:
+public:
   double z;
 
 public:
@@ -18,17 +18,22 @@ public:
   void set_z(double n) noexcept;
 
   Point3D operator*(const double &val) const;
+  Point3D operator/(const double &val) const;
   Point3D operator+(const Point3D &other) const;
   Point3D operator-(const Point3D &other) const;
   Point3D operator-() const;
   Point3D normalize() const;
   Point3D operator%(const Point3D &other) const;
 
+  Point3D &operator=(const Point3D &other);
   Point3D &operator+=(const Point3D &other);
 
-  void debug();
+  void debug() const;
 
   double operator*(const Point3D &other) const;
+
+  static Point3D average(const Point3D &p1, const Point3D &p2,
+                         const Point3D &p3);
 };
 
 #endif
