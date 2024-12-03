@@ -45,9 +45,6 @@ void ShadowMapVisitor::visit(Scene &ref) {
   bvis.visit(ref);
   auto bbox = bvis.getBounds();
 
-  qDebug() << "boundingBox " << bbox.first.get_x() << "->"
-           << bbox.second.get_x() << " " << bbox.first.get_y() << "->"
-           << bbox.second.get_y();
   if (abs(bbox.first.get_x() - bbox.second.get_x()) <= MyMath::EPS ||
       abs(bbox.first.get_y() - bbox.second.get_y()) <= MyMath::EPS ||
       std::isinf(bbox.first.get_x()) || std::isinf(bbox.first.get_y()) ||
@@ -94,14 +91,6 @@ void ShadowMapVisitor::visit(Scene &ref) {
           depth[y + offset.second][x + offset.first] = pdepth[y][x];
         }
       }
-  }
-
-  std::ofstream aboba("out.txt");
-
-  for (const auto &row : depth) {
-    for (const auto &el : row)
-      aboba << el << " ";
-    aboba << std::endl;
   }
 
   qDebug() << "ShadowMap created with res: " << depth.front().size()

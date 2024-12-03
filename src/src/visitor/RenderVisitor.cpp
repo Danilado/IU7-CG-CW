@@ -51,9 +51,18 @@ void RenderVisitor::visit(FaceModel &ref) {
   auto resolution = ctx->getResolution();
 
   auto range =
-      ref.getFaces() | // filter visible based on normal vector
+      ref.getFaces() |
+      // filter visible based on normal vector
       std::views::filter(std::bind(&Face::isVisible, std::placeholders::_1,
-                                   cam_position, *transf));
+                                   cam_position, *transf)) |
+      // filter behind camera
+      // TODO: Отсекать по координате
+      std::views::filter([&transf, &camtransf](const Face &f) {
+        return std::ranges::any_of(f.getPoints(), [&transf, &camtransf](
+                                                      const Point3D &pt) {
+          return camtransf->apply(transf->apply(pt)).get_z() >= 2 * MyMath::EPS;
+        });
+      });
 
   tbb::parallel_for_each(
       range.begin(), range.end(),

@@ -6,7 +6,6 @@
 
 class OrthoPTSCAdapter : public BasePTSCAdapter {
 private:
-  static double shadyExpFunc(double x);
   TransformationMatrix mat;
 
 public:

@@ -28,13 +28,6 @@ double ShadowMap::getBrightness(const Point3D &pt) {
     val = std::clamp(val, 0.3, 1.);
     return val;
   }
-  // else {
-  //   qDebug() << "ZHOPA3" << offset_x << "x" << coeffs.first << offset_y <<
-  //   "x"
-  //            << coeffs.second;
-  //   pt.debug();
-  //   tmppt.debug();
-  //   qDebug() << x << " " << y << " " << depth[y][x];
-  // }
-  return 0.3;
+
+  return 0.2;
 }
