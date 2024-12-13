@@ -16,6 +16,5 @@ public:
             std::function<Point3D(const Point3D &)> to_camera,
             std::function<std::shared_ptr<Point2D>(const Point3D &)> to_screen,
             size_t screen_width, size_t screen_height, const Color &color,
-            bool center_axis = true,
-            std::shared_ptr<ShadowMap> smap = nullptr) const;
+            const ShadowMap &smap, bool center_axis = true) const;
 };

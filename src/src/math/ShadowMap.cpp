@@ -8,7 +8,7 @@ double invlerp(double min, double max, double val) {
 }
 } // namespace
 
-double ShadowMap::getBrightness(const Point3D &pt) {
+double ShadowMap::getBrightness(const Point3D &pt) const {
   if (depth.empty() || depth.front().empty()) {
     return 0.;
   }
@@ -21,13 +21,16 @@ double ShadowMap::getBrightness(const Point3D &pt) {
     return 0.;
   }
 
-  if (tmppt.get_z() <= depth[y][x] + 3.) {
-    double val = 0.3 + (0.7 - 0.7 * invlerp(min_z, max_z, tmppt.get_z()));
+  if (tmppt.get_z() <= depth[y][x] + std::abs(2. / coeffs.first) +
+                           std::abs(2. / coeffs.second)) {
+    return 1.;
+
+    double val = 0.4 + (0.6 - 0.6 * invlerp(min_z, max_z, tmppt.get_z()));
     if (std::isnan(val) || std::isinf(val))
       val = 1.;
-    val = std::clamp(val, 0.3, 1.);
+    val = std::clamp(val, 0.4, 1.);
     return val;
   }
 
-  return 0.2;
+  return 0.4;
 }

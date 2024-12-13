@@ -15,6 +15,8 @@ void BaseCamera::move(double forward, double vertical, double horizontal) {
   origin += up * vertical;
   origin += right * horizontal;
 
+  origin.y = std::min(-20., origin.y);
+
   apply();
 }
 
@@ -31,8 +33,7 @@ void BaseCamera::apply() {
   TransformationMatrix res;
 
   res.translate(-origin);
-  res.rotate(0., -yaw, 0.);
-  res.rotate(pitch, 0., 0.);
+  res.rotate(pitch, -yaw, 0.);
 
   transform->replace(std::move(res));
 }

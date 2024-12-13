@@ -5,5 +5,5 @@
 void RenderCommand::exec() {
   DrawManager &dm = Singleton<DrawManager>::instance();
   dm.clear();
-  dm.renderScene();
+  dm.renderScene(lightYaw, lightPitch);
 }

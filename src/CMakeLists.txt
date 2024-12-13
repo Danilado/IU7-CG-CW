@@ -81,6 +81,11 @@ src/object/ObjectComposite.cpp
 src/object/ObjectBuilder.cpp
 src/object/ObjectDirectorSolution.cpp
 
+src/QWFC/Cell.cpp
+src/QWFC/QWFC.cpp
+src/QWFC/common/Symmetry.cpp
+src/QWFC/common/Direction.cpp
+
 src/manager/CameraManager.cpp
 src/manager/DrawManager.cpp
 src/manager/SceneManager.cpp
@@ -104,6 +109,10 @@ src/model/WireframeModel.cpp
 src/model/WireframeBuilder.cpp
 src/model/FaceModel.cpp
 src/model/Cube.cpp
+src/model/Square.cpp
+src/model/Roads.cpp
+src/model/House.cpp
+src/model/Tree.cpp
 
 src/scene/Scene.cpp
 
@@ -137,6 +146,9 @@ src/jsonAdapter
 src/manager
 src/model
 src/object
+src/QWFC
+src/QWFC/common
+src/QWFC/impl
 src/scene
 src/visitor
 src/math
@@ -159,6 +171,10 @@ ui/mainwindow.ui
 add_executable(app src/main.cpp ui/mainwindow.ui)
 target_compile_features(app PRIVATE cxx_std_20)
 target_link_libraries(app PRIVATE main Qt${QT_VERSION_MAJOR}::Widgets)
+
+add_executable(qwf src/qwf_main.cpp)
+target_compile_features(qwf PRIVATE cxx_std_20)
+target_link_libraries(qwf PRIVATE main)
 
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(app)

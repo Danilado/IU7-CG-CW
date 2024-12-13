@@ -23,13 +23,6 @@ public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
 
-  void addModelToBox(size_t id, const std::string &name);
-  void addCameraToBox(size_t id, const std::string &name);
-  void removeModelFromBox();
-  void removeCameraFromBox();
-  size_t getObjId();
-  size_t getCamId();
-
   void setupScene();
 
 private:
@@ -44,12 +37,6 @@ private:
   void keyPressEvent(QKeyEvent *e) override;
   void handleKey(Qt::Key key);
 
-  Point3D getOrigin();
-  Point3D getRotation();
-  Point3D getScale();
-  Point3D getTranslation();
-
-  void zoomCamera(double coeff);
   void moveCamera(double dx, double dy, double dz);
   void rotateCamera(double horizontal, double vertical);
 
@@ -57,26 +44,8 @@ private:
   // void redo();
 
 private Q_SLOTS:
-  void on_load_model_clicked();
-  void on_translate_clicked();
-  void on_translate_all_clicked();
-  void on_scale_clicked();
-  void on_scale_all_clicked();
-  void on_rotate_clicked();
-  void on_rotate_all_clicked();
-  void on_save_model_clicked();
-  void on_cam_tl_clicked();
-  void on_cam_t_clicked();
-  void on_cam_tr_clicked();
-  void on_cam_r_clicked();
-  void on_cam_br_clicked();
-  void on_cam_b_clicked();
-  void on_cam_bl_clicked();
-  void on_cam_l_clicked();
-  void on_remove_model_clicked();
-  void on_save_cam_clicked();
-  void on_load_cam_clicked();
-  void on_remove_cam_clicked();
-  void on_cambox_currentIndexChanged(int index);
+  void on_generate_clicked();
+  void on_pitch_sliderReleased();
+  void on_yaw_sliderReleased();
 };
 #endif // MAINWINDOW_H

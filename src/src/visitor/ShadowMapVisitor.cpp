@@ -12,15 +12,19 @@
 
 #include "BoundingBoxVisitor.hpp"
 
+namespace {
+constexpr int max_size = 1024 * 8;
+}
+
 ShadowMapVisitor::ShadowMapVisitor(double pitch, double yaw) {
   view.reset();
-  view.rotate(0., -yaw, 0.);
-  view.rotate(pitch, 0., 0.);
+  view.rotate(pitch, -yaw, 0.);
 }
 
 void ShadowMapVisitor::visit(FaceModel &ref) {
   std::shared_ptr<TransformationMatrix> transf = ref.getTransformation();
   Point3D cam_position = view.apply({0, 0, -1000000});
+  cam_position.y = std::min(-std::abs(cam_position.y), -1000000.);
 
   auto range =
       ref.getFaces() | // filter visible based on normal vector
@@ -36,7 +40,7 @@ void ShadowMapVisitor::visit(FaceModel &ref) {
               return std::make_shared<Point2D>((pt.get_x() - offsetx) * kx,
                                                (pt.get_y() - offsety) * ky);
             },
-            depth.front().size(), depth.size(), false));
+            depth.front().size(), depth.size(), ShadowMap(), false));
       });
 }
 
@@ -60,13 +64,13 @@ void ShadowMapVisitor::visit(Scene &ref) {
   int size_y = bbox.second.get_y() - bbox.first.get_y() + 1;
 
   kx = ky = 1.;
-  if (size_x > 1920) {
-    kx = 1920. / static_cast<double>(size_x);
-    size_x = 1920;
+  if (size_x != max_size) {
+    kx = static_cast<double>(max_size) / static_cast<double>(size_x);
+    size_x = max_size;
   }
-  if (size_y > 1080) {
-    ky = 1080. / static_cast<double>(size_y);
-    size_y = 1080;
+  if (size_y != max_size) {
+    ky = static_cast<double>(max_size) / static_cast<double>(size_y);
+    size_y = max_size;
   }
 
   depth.resize(size_y, std::vector<double>(

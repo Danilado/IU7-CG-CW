@@ -13,3 +13,8 @@ bool Scene::removeObject(size_t id) { return objects.erase(id) > 0; }
 Scene::SceneIterator Scene::begin() { return objects.begin(); }
 
 Scene::SceneIterator Scene::end() { return objects.end(); }
+
+void Scene::reset() {
+  objects.clear();
+  object_id_counter = 1;
+}

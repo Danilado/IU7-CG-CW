@@ -197,6 +197,10 @@ TransformationMatrix::operator*(const TransformationMatrix &other) const {
   return res;
 }
 
+Point3D TransformationMatrix::operator*(const Point3D &pt) const {
+  return apply(pt);
+}
+
 TransformationMatrix &
 TransformationMatrix::operator*=(const TransformationMatrix &other) {
   TransformationMatrix tmpmat = (*this) * other;

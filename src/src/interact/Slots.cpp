@@ -1,254 +1,136 @@
-#include "LoadCameraCommand.hpp"
-#include "LoadModelCommand.hpp"
-#include "RedoCommand.hpp"
-#include "RemoveObjectCommand.hpp"
-#include "RotateObjectCommand.hpp"
-#include "SaveCameraCommand.hpp"
-#include "SaveModelCommand.hpp"
-#include "ScaleObjectCommand.hpp"
-#include "SetCameraCommand.hpp"
-#include "TranslateObjectCommand.hpp"
-#include "UndoCommand.hpp"
 #include "mainwindow.hpp"
+#include "ui_mainwindow.h"
 
+#include "Color.hpp"
+#include "Cube.hpp"
+#include "House.hpp"
+#include "Roads.hpp"
+#include "Scene.hpp"
+#include "SceneManager.hpp"
+#include "ShadowMap.hpp"
+#include "ShadowMapVisitor.hpp"
+#include "SingletonTemplate.hpp"
+#include "Square.hpp"
+#include "Tree.hpp"
+
+#include "QWFC.hpp"
+#include "QWFCHelper.hpp"
 #include <QDebug>
 
-void MainWindow::on_save_model_clicked() {
-  if (!getObjId())
-    return;
-  QString filename = QFileDialog::getSaveFileName(this, tr("Выбрать файл"),
-                                                  "../models/", tr("*.json"));
-  if (filename.isNull())
-    return;
-
-  char *buf = (char *)calloc(filename.length() + 1, sizeof(char));
-  if (buf == nullptr)
-    return;
-  strcpy(buf, filename.toLocal8Bit().data());
-
-  try {
-    auto cmd = std::make_shared<SaveModelCommand>(std::string(buf), getObjId());
-    application.exec(cmd);
-  } catch (const std::exception &e) {
-    showError(e.what());
-  }
+namespace {
+constexpr double side = 50;
 }
 
-void MainWindow::on_load_model_clicked() {
-  // QString filename = QFileDialog::getOpenFileName(
-  //     this, tr("Выбрать файл"), "../models/", tr("*.txt, *.json"));
-  // if (filename.isNull())
-  //   return;
+void MainWindow::on_generate_clicked() {
+  SceneManager &sm = Singleton<SceneManager>::instance();
+  sm.resetScene();
 
-  // char *buf = (char *)calloc(filename.length() + 1, sizeof(char));
-  // if (buf == nullptr)
-  //   return;
+  qDebug() << "Generating...";
+  size_t sz_x = ui->xlimits->value();
+  size_t sz_y = ui->ylimits->value();
+  qDebug() << "Size:" << sz_x << sz_y;
+  double coeff_roads = ui->roadprob->value();
+  double coeff_houses = ui->houseprob->value();
+  double coeff_trees = ui->treeprob->value();
+  double coeff_empty = ui->emptyprob->value();
 
-  // strcpy(buf, filename.toLocal8Bit().data());
+  auto cells =
+      QWFCHelper::GetCells(coeff_roads, coeff_houses, coeff_trees, coeff_empty);
 
-  size_t resid;
+  QWFC qwf(sz_x, sz_y, cells);
+  qwf.run();
 
-  // auto cmd = std::make_shared<LoadModelCommand>(std::string(buf), resid);
-  auto cmd = std::make_shared<LoadModelCommand>("", resid);
-  // auto cmd = std::make_shared<LoadModelCommand>(
-  //     "D:\\develop\\IU7-OOP\\lab_03\\models\\cubeincude.json");
+  qDebug() << "Generated 2d scene";
 
-  try {
-    application.exec(cmd);
-    sdh->addModel(resid, "Cube " + std::to_string(resid));
-  } catch (const std::exception &e) {
-    showError(e.what());
-  }
+  std::vector<Color> gridColors = {Color(0, 255, 0), Color(128, 255, 0)};
+
+  std::map<int, Color> colorful = {
+      {0, Color(255, 0, 0)},  {1, Color(255, 0, 0)}, {2, Color(255, 0, 0)},
+      {3, Color(255, 0, 0)},  {4, Color(255, 0, 0)}, {5, Color(255, 0, 0)},
+      {6, Color(255, 0, 0)},  {7, Color(0, 255, 0)}, {8, Color(88, 57, 39)},
+      {9, Color(128, 255, 0)}};
+
+  auto res = qwf.getResult();
+  for (size_t y = 0; y < res.size(); ++y)
+    for (size_t x = 0; x < res.front().size(); ++x) {
+      ObjectPtr obj = std::make_shared<Square>(side, gridColors[(x + y) % 2]);
+      obj->move(-side / 2, 50.005, 0);
+      obj->move(side * x, 0, side * y);
+      sm.addObject(obj);
+
+      ObjectPtr model;
+      switch (res[y][x].getId()) {
+      case 0:
+        model = std::make_shared<CrossRoad>(side, Color(211, 211, 211));
+        break;
+      case 1:
+        model = std::make_shared<HorizontalRoad>(side, Color(211, 211, 211));
+        break;
+      case 2:
+        model = std::make_shared<VerticalRoad>(side, Color(211, 211, 211));
+        break;
+      case 3:
+        model = std::make_shared<BRRoad>(side, Color(211, 211, 211));
+        break;
+      case 4:
+        model = std::make_shared<TRRoad>(side, Color(211, 211, 211));
+        break;
+      case 5:
+        model = std::make_shared<LBRoad>(side, Color(211, 211, 211));
+        break;
+      case 6:
+        model = std::make_shared<TLRoad>(side, Color(211, 211, 211));
+        break;
+      case 8:
+        model = std::make_shared<House>(side * 0.5);
+        model->move(side * 0.5 / 2, .5, side * 0.5 / 2);
+        break;
+      case 9:
+        model = std::make_shared<Tree>(side * 0.3);
+        model->move(side * 0.5 / 2, .5, side * 0.5 / 2);
+      default:
+        break;
+      }
+      if (!model)
+        continue;
+      model->move(-side / 2, 50, 0);
+      model->move(side * x, 0, side * y);
+      sm.addObject(model);
+    }
+
+  ShadowMap &smap = Singleton<ShadowMap>::instance();
+  ShadowMapVisitor vis(MyMath::rad(ui->pitch->value()),
+                       MyMath::rad(ui->yaw->value()));
+
+  vis.visit(*sm.getScene());
+
+  smap = std::move(vis.getSmap());
 
   updateScene();
 }
 
-void MainWindow::on_translate_clicked() {
-  Point3D translation = getTranslation();
-  std::shared_ptr<TranslateObjectCommand> cmd =
-      std::make_shared<TranslateObjectCommand>(translation, getObjId());
-  application.exec(cmd);
+void MainWindow::on_pitch_sliderReleased() {
+  SceneManager &sm = Singleton<SceneManager>::instance();
+
+  ShadowMap &smap = Singleton<ShadowMap>::instance();
+  ShadowMapVisitor vis(MyMath::rad(ui->pitch->value()),
+                       MyMath::rad(ui->yaw->value()));
+
+  vis.visit(*sm.getScene());
+
+  smap = std::move(vis.getSmap());
   updateScene();
 }
 
-void MainWindow::on_translate_all_clicked() {
-  Point3D translation = getTranslation();
-  std::shared_ptr<TranslateObjectCommand> cmd =
-      std::make_shared<TranslateObjectCommand>(translation, 0);
-  application.exec(cmd);
+void MainWindow::on_yaw_sliderReleased() {
+  SceneManager &sm = Singleton<SceneManager>::instance();
+
+  ShadowMap &smap = Singleton<ShadowMap>::instance();
+  ShadowMapVisitor vis(MyMath::rad(ui->pitch->value()),
+                       MyMath::rad(ui->yaw->value()));
+
+  vis.visit(*sm.getScene());
+
+  smap = std::move(vis.getSmap());
   updateScene();
 }
-
-void MainWindow::on_scale_clicked() {
-  Point3D origin = getOrigin();
-  Point3D scale = getScale();
-  std::shared_ptr<ScaleObjectCommand> cmd =
-      std::make_shared<ScaleObjectCommand>(origin, scale, getObjId());
-  application.exec(cmd);
-  updateScene();
-}
-
-void MainWindow::on_scale_all_clicked() {
-  Point3D origin = getOrigin();
-  Point3D scale = getScale();
-  std::shared_ptr<ScaleObjectCommand> cmd =
-      std::make_shared<ScaleObjectCommand>(origin, scale, 0);
-  application.exec(cmd);
-  updateScene();
-}
-
-void MainWindow::on_rotate_clicked() {
-  Point3D origin = getOrigin();
-  Point3D rotation = getRotation();
-  std::shared_ptr<RotateObjectCommand> cmd =
-      std::make_shared<RotateObjectCommand>(origin, rotation, getObjId(), true);
-  application.exec(cmd);
-  updateScene();
-}
-
-void MainWindow::on_rotate_all_clicked() {
-  Point3D origin = getOrigin();
-  Point3D rotation = getRotation();
-  std::shared_ptr<RotateObjectCommand> cmd =
-      std::make_shared<RotateObjectCommand>(origin, rotation, 0, true);
-  application.exec(cmd);
-  updateScene();
-}
-
-void MainWindow::on_cam_tl_clicked() { rotateCamera(-5, 5); }
-
-void MainWindow::on_cam_t_clicked() { rotateCamera(-5, 0); }
-
-void MainWindow::on_cam_tr_clicked() { rotateCamera(-5, -5); }
-
-void MainWindow::on_cam_r_clicked() { rotateCamera(0, -5); }
-
-void MainWindow::on_cam_br_clicked() { rotateCamera(5, -5); }
-
-void MainWindow::on_cam_b_clicked() { rotateCamera(5, 0); }
-
-void MainWindow::on_cam_bl_clicked() { rotateCamera(5, 5); }
-
-void MainWindow::on_cam_l_clicked() { rotateCamera(0, 5); }
-
-void MainWindow::on_save_cam_clicked() {
-  if (!getCamId())
-    return;
-  QString filename = QFileDialog::getSaveFileName(this, tr("Выбрать файл"),
-                                                  "../cameras/", tr("*.json"));
-  if (filename.isNull())
-    return;
-
-  char *buf = (char *)calloc(filename.length() + 1, sizeof(char));
-  if (buf == nullptr)
-    return;
-
-  strcpy(buf, filename.toLocal8Bit().data());
-
-  try {
-    auto cmd =
-        std::make_shared<SaveCameraCommand>(std::string(buf), getCamId());
-    application.exec(cmd);
-  } catch (const std::exception &e) {
-    showError(e.what());
-  }
-}
-
-void MainWindow::on_load_cam_clicked() {
-  QString filename = QFileDialog::getOpenFileName(
-      this, tr("Выбрать файл"), "../cameras/", tr("*.txt, *.json"));
-  if (filename.isNull())
-    return;
-
-  char *buf = (char *)calloc(filename.length() + 1, sizeof(char));
-  if (buf == nullptr)
-    return;
-
-  strcpy(buf, filename.toLocal8Bit().data());
-
-  size_t resid;
-
-  auto cmd = std::make_shared<LoadCameraCommand>(std::string(buf), resid);
-
-  try {
-    application.exec(cmd);
-    sdh->addCamera(resid, "Camera " + std::to_string(resid));
-  } catch (const std::exception &e) {
-    showError(e.what());
-  }
-
-  updateScene();
-}
-
-void MainWindow::on_cambox_currentIndexChanged(int index) {
-  auto cmd = std::make_shared<SetCameraCommand>(getCamId());
-  try {
-    application.exec(cmd);
-  } catch (const std::exception &e) {
-    showError(e.what());
-  }
-  updateScene();
-}
-
-void MainWindow::on_remove_model_clicked() {
-  size_t oid = getObjId();
-  if (!oid)
-    return;
-
-  qDebug() << "remove model";
-
-  auto cmd = std::make_shared<RemoveObjectCommand>(oid);
-
-  try {
-    application.exec(cmd);
-    sdh->removeModel(oid);
-  } catch (const std::exception &e) {
-    showError(e.what());
-  }
-
-  updateScene();
-}
-
-void MainWindow::on_remove_cam_clicked() {
-  if (sdh->getCamLength() < 2)
-    return;
-
-  qDebug() << "remove camera";
-
-  size_t cid = getCamId();
-
-  auto cmd = std::make_shared<RemoveObjectCommand>(cid);
-
-  try {
-    application.exec(cmd);
-    sdh->removeCamera(cid);
-  } catch (const std::exception &e) {
-    showError(e.what());
-  }
-
-  updateScene();
-}
-
-// void MainWindow::undo() {
-//   auto cmd = std::make_shared<UndoCommand>(getObjId());
-
-//   try {
-//     application.exec(cmd);
-//   } catch (const std::exception &e) {
-//     showError(e.what());
-//   }
-
-//   updateScene();
-// }
-
-// void MainWindow::redo() {
-//   auto cmd = std::make_shared<RedoCommand>(getObjId());
-
-//   try {
-//     application.exec(cmd);
-//   } catch (const std::exception &e) {
-//     showError(e.what());
-//   }
-
-//   updateScene();
-// }

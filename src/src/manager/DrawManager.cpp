@@ -10,7 +10,7 @@ void DrawManager::setDrawer(std::shared_ptr<BaseDrawer> drawer) {
   ctx = drawer;
 }
 
-void DrawManager::renderScene() {
+void DrawManager::renderScene(double lYaw, double lPitch) {
   validateDrawer();
 
   SceneManager &sm = Singleton<SceneManager>::instance();
@@ -19,7 +19,7 @@ void DrawManager::renderScene() {
   std::shared_ptr<Scene> scene = sm.getScene();
   std::shared_ptr<BasePTSCAdapter> PTSCa = cm.getAdapter();
 
-  RenderVisitor rvis(PTSCa, ctx);
+  RenderVisitor rvis(PTSCa, ctx, lYaw, lPitch);
   rvis.visit(*scene);
 }
 

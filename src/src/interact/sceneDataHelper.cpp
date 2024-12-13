@@ -14,24 +14,18 @@ void SceneDataHelper::removeObject(size_t id) {
 void SceneDataHelper::addCamera(size_t id, const std::string &meta) {
   cameras.insert(id);
   addObject(id, meta);
-  mw.addCameraToBox(id, meta);
 }
 
 void SceneDataHelper::addModel(size_t id, const std::string &meta) {
   addObject(id, meta);
-  mw.addModelToBox(id, meta);
 }
 
 void SceneDataHelper::removeCamera(size_t id) {
   cameras.erase(cameras.find(id));
   removeObject(id);
-  mw.removeCameraFromBox();
 }
 
-void SceneDataHelper::removeModel(size_t id) {
-  removeObject(id);
-  mw.removeModelFromBox();
-}
+void SceneDataHelper::removeModel(size_t id) { removeObject(id); }
 
 std::map<size_t, std::string> &SceneDataHelper::getObjects() { return objects; }
 

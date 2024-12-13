@@ -25,11 +25,11 @@ public:
   getPixmap(std::function<Point3D(const Point3D &)> to_world,
             std::function<Point3D(const Point3D &)> to_camera,
             std::function<std::shared_ptr<Point2D>(const Point3D &)> to_screen,
-            size_t screen_width, size_t screen_height, bool center_axis = true,
-            std::shared_ptr<ShadowMap> smap = nullptr) const {
+            size_t screen_width, size_t screen_height, const ShadowMap &smap,
+            bool center_axis = true) const {
 
     return tr.getPixmap(to_world, to_camera, to_screen, screen_width,
-                        screen_height, c, center_axis, smap);
+                        screen_height, c, smap, center_axis);
   }
 
 private:

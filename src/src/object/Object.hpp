@@ -54,6 +54,10 @@ public:
 
   virtual Point3D getPosition() const;
   virtual Point3D getDirection() const;
+
+  virtual void move(double dx, double dy, double dz) const;
+  virtual void scale(double kx, double ky, double kz) const;
+  virtual void rotate(double ax, double ay, double az) const;
 };
 
 class ObjectMemento {

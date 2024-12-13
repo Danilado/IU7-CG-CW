@@ -5,9 +5,14 @@
 
 class RenderCommand : public DrawCommand {
 public:
-  RenderCommand() = default;
+  RenderCommand(double lightPitch, double lightYaw)
+      : lightPitch(lightPitch), lightYaw(lightYaw) {}
   ~RenderCommand() = default;
   void exec() override;
+
+private:
+  double lightPitch = 0.;
+  double lightYaw = 0.;
 };
 
 #endif

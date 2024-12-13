@@ -17,13 +17,13 @@ private:
   std::vector<std::vector<double>> depth;
   tbb::concurrent_vector<MyPixmap> pixmaps;
 
-  std::shared_ptr<ShadowMap> smap;
+  double lYaw, lPitch;
 
 public:
   RenderVisitor() = delete;
   RenderVisitor(std::shared_ptr<BasePTSCAdapter> PTSCAdapter,
-                std::shared_ptr<BaseDrawer> ctx)
-      : PTSCAdapter(PTSCAdapter), ctx(ctx) {}
+                std::shared_ptr<BaseDrawer> ctx, double lYaw, double lPitch)
+      : PTSCAdapter(PTSCAdapter), ctx(ctx), lYaw(lYaw), lPitch(lPitch) {}
   ~RenderVisitor() = default;
 
   void visit(WireframeModel &ref) override;

@@ -14,7 +14,7 @@ public:
   explicit DrawManager(std::shared_ptr<BaseDrawer> drawer) : ctx(drawer) {}
 
   void setDrawer(std::shared_ptr<BaseDrawer>);
-  void renderScene();
+  void renderScene(double lYaw, double lPitch);
   void clear();
 
   DrawManager(const DrawManager &) = delete;

@@ -38,6 +38,8 @@ void RenderVisitor::visit(WireframeModel &ref) {
 }
 
 void RenderVisitor::visit(FaceModel &ref) {
+  ShadowMap &smap = Singleton<ShadowMap>::instance();
+
   std::shared_ptr<TransformationMatrix> transf = ref.getTransformation();
 
   CameraManager &cm = Singleton<CameraManager>::instance();
@@ -66,12 +68,14 @@ void RenderVisitor::visit(FaceModel &ref) {
 
   tbb::parallel_for_each(
       range.begin(), range.end(),
-      [this, &camtransf, &transf, &resolution](const Face &face) {
+      [this, &camtransf, &transf, &resolution, &smap](const Face &face) {
         pixmaps.emplace_back(face.getPixmap(
             [transf](const Point3D &pt) { return transf->apply(pt); },
             [&camtransf](const Point3D &pt) { return camtransf->apply(pt); },
-            [this](const Point3D &pt) { return PTSCAdapter->convert(pt); },
-            resolution.first, resolution.second, true, smap));
+            [this, &smap](const Point3D &pt) {
+              return PTSCAdapter->convert(pt);
+            },
+            resolution.first, resolution.second, smap, true));
       });
 }
 
@@ -80,13 +84,10 @@ void RenderVisitor::visit(OrthogonalCamera &ref) {}
 void RenderVisitor::visit(ProjectionCamera &ref) {}
 
 void RenderVisitor::visit(Scene &ref) {
-  ShadowMapVisitor sha(0., 0.);
-  sha.visit(ref);
+  ShadowMap &smap = Singleton<ShadowMap>::instance();
 
-  smap = std::make_shared<ShadowMap>(sha.getSmap());
-  if (!smap->isValid()) {
+  if (!smap.isValid()) {
     qDebug() << "Invalid shadowmap";
-    smap = nullptr;
   }
 
   auto resolution = ctx->getResolution();
@@ -115,7 +116,7 @@ void RenderVisitor::visit(Scene &ref) {
       for (int y = 0; y < pdepth.size(); ++y) {
         if (pdepth[y][x] < depth[y + offset.second][x + offset.first]) {
           depth[y + offset.second][x + offset.first] = pdepth[y][x];
-          if (smap)
+          if (smap.isValid())
             colors[y + offset.second][x + offset.first] =
                 pcolor * pbright[y][x];
           else

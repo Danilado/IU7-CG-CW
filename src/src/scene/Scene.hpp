@@ -29,6 +29,8 @@ public:
 
   SceneIterator begin();
   SceneIterator end();
+
+  void reset();
 };
 
 #endif

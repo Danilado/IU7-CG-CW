@@ -44,6 +44,21 @@ void Object::restoreMemento(std::shared_ptr<ObjectMemento> memento) {
   transform = std::move(memento->get());
 }
 
+void Object::move(double dx, double dy, double dz) const {
+  TranslationMatrix t(dx, dy, dz);
+  *transform *= t;
+}
+
+void Object::scale(double kx, double ky, double kz) const {
+  ScalingMatrix t(kx, ky, kz);
+  *transform *= t;
+}
+
+void Object::rotate(double ax, double ay, double az) const {
+  RotationMatrix t(ax, ay, az, true);
+  *transform *= t;
+}
+
 std::shared_ptr<TransformationMatrix> Object::getTransformation() {
   return transform;
 }

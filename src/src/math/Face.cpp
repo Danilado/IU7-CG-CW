@@ -1,6 +1,8 @@
 #include "Face.hpp"
 #include "MyMath.hpp"
 
+#include <ranges>
+
 bool Face::isVisible(const Point3D &camPosition,
                      const TransformationMatrix &transf) const {
   auto camDirection = transf.apply(tr.getP1()) - camPosition;

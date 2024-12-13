@@ -28,9 +28,6 @@ public:
 
   std::map<size_t, std::string> &getObjects();
 
-  size_t getObjId();
-  size_t getCamId();
-
   SceneDataHelper(const SceneDataHelper &) = delete;
   SceneDataHelper &operator=(const SceneDataHelper &) = delete;
 

@@ -70,6 +70,8 @@ public:
   TransformationMatrix operator*(const TransformationMatrix &other) const;
   TransformationMatrix &operator*=(const TransformationMatrix &other);
 
+  Point3D operator*(const Point3D &pt) const;
+
   TransformationMatrix operator+(const TransformationMatrix &other) const;
   TransformationMatrix &operator+=(const TransformationMatrix &other);
 
@@ -80,6 +82,12 @@ public:
 
   TransformationMatrix getOffset() const;
   TransformationMatrix getNegOffset() const;
+
+  TransformationMatrix &operator=(TransformationMatrix &&o) {
+    transform = std::move(o.transform);
+
+    return *this;
+  }
 
   static TransformationMatrix lookAt(const Point3D &eye, const Point3D &target,
                                      const Point3D &up);

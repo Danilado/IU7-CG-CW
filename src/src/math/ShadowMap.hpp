@@ -15,6 +15,7 @@ class ShadowMap {
   double offset_y;
 
 public:
+  ShadowMap() = default;
   ShadowMap(TransformationMatrix &&matrix, std::pair<double, double> coeffs,
             double ox, double oy, std::vector<std::vector<double>> &&d)
       : view(matrix), coeffs(coeffs), depth(d), offset_x(ox), offset_y(oy) {
@@ -35,5 +36,20 @@ public:
 
   bool isValid() const { return !(depth.empty() || depth.front().empty()); }
 
-  double getBrightness(const Point3D &pt);
+  double getBrightness(const Point3D &pt) const;
+
+  ShadowMap(const ShadowMap &) = delete;
+  ShadowMap &operator=(const ShadowMap &) = delete;
+  ShadowMap &operator=(ShadowMap &&o) {
+    min_z = o.min_z;
+    max_z = o.max_z;
+    offset_x = o.offset_x;
+    offset_y = o.offset_y;
+
+    view = std::move(o.view);
+    coeffs = std::move(o.coeffs);
+    depth = std::move(o.depth);
+
+    return *this;
+  };
 };
