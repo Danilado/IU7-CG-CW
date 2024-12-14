@@ -61,7 +61,7 @@
    </property>
    <layout class="QGridLayout" name="gridLayout">
     <property name="sizeConstraint">
-     <enum>QLayout::SetDefaultConstraint</enum>
+     <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
     </property>
     <item row="0" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout">
@@ -140,7 +140,7 @@
               <item>
                <widget class="QLabel" name="label_2">
                 <property name="text">
-                 <string>Ограничения</string>
+                 <string>Вероятности</string>
                 </property>
                </widget>
               </item>
@@ -305,7 +305,7 @@
             <item>
              <widget class="QLabel" name="label_4">
               <property name="text">
-               <string>Направление источника</string>
+               <string>Положение источника</string>
               </property>
              </widget>
             </item>
@@ -329,7 +329,7 @@
                <number>120</number>
               </property>
               <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+               <enum>Qt::Orientation::Horizontal</enum>
               </property>
              </widget>
             </item>
@@ -360,22 +360,106 @@
            <number>120</number>
           </property>
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="tickPosition">
-           <enum>QSlider::NoTicks</enum>
+           <enum>QSlider::TickPosition::NoTicks</enum>
           </property>
          </widget>
         </item>
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <property name="sizeConstraint">
-           <enum>QLayout::SetMinimumSize</enum>
+           <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
           </property>
+          <item>
+           <widget class="QLabel" name="label_13">
+            <property name="text">
+             <string>Управление камерой:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_14">
+            <property name="text">
+             <string>W - движение вперёд</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_15">
+            <property name="text">
+             <string>A - движение влево</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_16">
+            <property name="text">
+             <string>S - движение назад</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_17">
+            <property name="text">
+             <string>D - движение вправо</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_18">
+            <property name="text">
+             <string>I - поворот вверх</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_19">
+            <property name="text">
+             <string>J - поворот влево</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_20">
+            <property name="text">
+             <string>K - поворот влево</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_21">
+            <property name="text">
+             <string>L - поворот влево</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_24">
+            <property name="text">
+             <string>Движение вдоль Oy:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_22">
+            <property name="text">
+             <string>B - движение вниз</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_23">
+            <property name="text">
+             <string>Пробел - движение вверх</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <spacer name="verticalSpacer">
             <property name="orientation">
-             <enum>Qt::Vertical</enum>
+             <enum>Qt::Orientation::Vertical</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -392,7 +476,7 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_6">
             <property name="sizeConstraint">
-             <enum>QLayout::SetMinimumSize</enum>
+             <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
             </property>
            </layout>
           </item>

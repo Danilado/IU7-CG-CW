@@ -1,0 +1,276 @@
+\renewcommand\thechapter{A}
+
+\ssr{ПРИЛОЖЕНИЕ A}
+
+\begin{lstlisting}[caption={Использование RenderVisitor на сцену}, label={lst:render_scene}]
+void RenderVisitor::visit(Scene &ref) {
+  ShadowMap &smap = Singleton<ShadowMap>::instance();
+  auto resolution = ctx->getResolution();
+  colors.resize(resolution.second, std::vector<Color>(resolution.first));
+  depth.resize(resolution.second,
+               std::vector<double>(resolution.first,
+                                   std::numeric_limits<double>::infinity()));
+  pixmaps.clear();
+
+  tbb::parallel_for_each(ref.begin(), ref.end(), [this](const auto &newref) {
+    newref.second->accept(*this);
+  });
+
+  for (const MyPixmap &pmap :
+       pixmaps | std::views::filter([](const MyPixmap &pmap) {
+         return !pmap.getDepth().empty() && !pmap.getDepth().front().empty();
+       })) {
+    auto &pdepth = pmap.getDepth(); auto offset = pmap.getOffset();
+    auto &pcolor = pmap.getColor(); auto &pbright = pmap.getBrightness();
+
+    for (int x = 0; x < pdepth.front().size(); ++x)
+      for (int y = 0; y < pdepth.size(); ++y) {
+        if (pdepth[y][x] < depth[y + offset.second][x + offset.first]) {
+          depth[y + offset.second][x + offset.first] = pdepth[y][x];
+          if (smap.isValid())
+            colors[y + offset.second][x + offset.first] =
+                pcolor * pbright[y][x];
+          else
+            colors[y + offset.second][x + offset.first] = pcolor;
+        }
+      }
+  }
+
+  ctx->setImage(colors);
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Использование RenderVisitor на модель}, label={lst:render_model}]
+void RenderVisitor::visit(FaceModel &ref) {
+  ShadowMap &smap = Singleton<ShadowMap>::instance();
+
+  std::shared_ptr<TransformationMatrix> transf = ref.getTransformation();
+
+  CameraManager &cm = Singleton<CameraManager>::instance();
+
+  std::shared_ptr<BaseCamera> cam =
+      std::dynamic_pointer_cast<BaseCamera>(cm.getCamera());
+  std::shared_ptr<TransformationMatrix> camtransf = cam->getTransformation();
+
+  PTSCAdapter->setCamera(cm.getCamera());
+  Point3D cam_position = cam->getPosition();
+  auto resolution = ctx->getResolution();
+
+  auto range =
+      ref.getFaces() |
+    std::views::filter(std::bind(&Face::isVisible, std::placeholders::_1,
+                                    cam_position, *transf)) |
+      std::views::filter([&transf, &camtransf](const Face &f) {
+        return std::ranges::any_of(f.getPoints(), [&transf, &camtransf](
+                                                      const Point3D &pt) {
+    return camtransf->apply(transf->apply(pt)).z >= 2 * MyMath::EPS;
+        });
+      });
+
+  tbb::parallel_for_each(
+      range.begin(), range.end(),
+      [this, &camtransf, &transf, &resolution, &smap](const Face &face) {
+        pixmaps.emplace_back(face.getPixmap(
+            [transf](const Point3D &pt) { return transf->apply(pt); },
+            [&camtransf](const Point3D &pt) { return camtransf->apply(pt); },
+            [this, &smap](const Point3D &pt) {
+              return PTSCAdapter->convert(pt);
+            },
+            resolution.first, resolution.second, smap, true));
+      });
+}  
+\end{lstlisting}
+
+\iffalse
+\begin{lstlisting}[caption={Растеризация треугольника --- начало}, label={lst:render_triangle}]
+MyPixmap Triangle::getPixmap(
+    std::function<Point3D(const Point3D &)> to_world,
+    std::function<Point3D(const Point3D &)> to_camera,
+    std::function<std::shared_ptr<Point2D>(const Point3D &)> to_screen,
+    size_t screen_width, size_t screen_height, const Color &color,
+    const ShadowMap &smap, bool center_axis) const {
+  int centerX = center_axis ? static_cast<int>(screen_width / 2) : 0;
+  int centerY = center_axis ? static_cast<int>(screen_height / 2) : 0;
+
+  Point3D t0 = to_world(p1); 
+  Point3D t1 = to_world(p2); 
+  Point3D t2 = to_world(p3);
+
+  Point3D v0 = to_camera(t0); 
+  Point3D v1 = to_camera(t1); 
+  Point3D v2 = to_camera(t2);
+
+  std::shared_ptr<Point2D> pt1_screen = to_screen(v0);
+  std::shared_ptr<Point2D> pt2_screen = to_screen(v1);
+  std::shared_ptr<Point2D> pt3_screen = to_screen(v2);
+
+  Point2D p0_2d(pt1_screen->x + centerX, pt1_screen->y + centerY);
+  Point2D p1_2d(pt2_screen->x + centerX, pt2_screen->y + centerY);
+  Point2D p2_2d(pt3_screen->x + centerX, pt3_screen->y + centerY);
+
+  if (p1_2d.y < p0_2d.y) {
+    std::swap(p0_2d, p1_2d); std::swap(v0, v1); std::swap(t0, t1);
+  }
+  if (p2_2d.y < p1_2d.y) {
+    std::swap(p1_2d, p2_2d); std::swap(v1, v2); std::swap(t1, t2);
+  }
+  if (p1_2d.y < p0_2d.y) {
+    std::swap(p0_2d, p1_2d); std::swap(v0, v1); std::swap(t0, t1);
+  }
+
+  auto interpolate = [](double y1, double x1, double y2, double x2, double y) {
+    if (y1 == y2) return x1;
+    return x1 + (x2 - x1) * (y - y1) / (y2 - y1);
+  };
+\end{lstlisting}
+\begin{lstlisting}[caption={Продолжение Растеризация треугольника}, label={lst:render_triangle1}]
+  auto interpolateZ = [](double y1, double z1, double y2, double z2, double y) {
+    if (y1 == y2) return z1;
+    return z1 + (z2 - z1) * (y - y1) / (y2 - y1);
+  };
+
+  auto interpolatePart = [](double v1, double v2, int y1, int y2, int y) {
+    return v1 + (v2 - v1) * (y - y1) / static_cast<double>(y2 - y1);
+  };
+
+  auto interpolatePoint = [&interpolatePart](const Point3D &p1,
+                                             const Point3D &p2, int y1, int y2,
+                                             int y) {
+    return Point3D(interpolatePart(p1.x, p2.x, y1, y2, y),
+                   interpolatePart(p1.y, p2.y, y1, y2, y),
+                   interpolatePart(p1.z, p2.z, y1, y2, y));
+  };
+
+  int minY = std::max(0, static_cast<int>(std::floor(p0_2d.y)));
+  int minYClamped = std::clamp(minY, 0, static_cast<int>(screen_height));
+  int maxY = std::min(static_cast<int>(screen_height),
+               static_cast<int>(std::ceil(p2_2d.y))) + 1; 
+  int maxYClamped = std::clamp(maxY, 0, static_cast<int>(screen_height));
+
+  int minX = std::min({static_cast<int>(p0_2d.x),
+                       static_cast<int>(p1_2d.x),
+                       static_cast<int>(p2_2d.x)});
+  int minXClamped = std::clamp(minX, 0, static_cast<int>(screen_width));
+  int maxX = std::max({static_cast<int>(p0_2d.x),
+                static_cast<int>(p1_2d.x),
+                static_cast<int>(p2_2d.x)}) + 1;
+  int maxXClamped = std::clamp(maxX, 0, static_cast<int>(screen_width));
+
+  if (maxXClamped - minXClamped <= 0 || maxYClamped - minYClamped <= 0)
+    return MyPixmap(0, 0);
+
+  MyPixmap res(maxXClamped - minXClamped, maxYClamped - minYClamped,
+               minXClamped, minYClamped, smap.isValid());
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Продолжение Растеризация треугольника}, label={lst:render_triangle2}]
+  std::vector<std::vector<double>> &depth = res.getDepthE();
+  std::vector<std::vector<double>> &brightness = res.getBrightnessE();
+  res.setColor(color);
+
+  for (int y = minYClamped; y < maxYClamped; ++y) {
+    double xLeft, xRight, zLeft, zRight;
+    Point3D worldLeft, worldRight;
+
+    if (y < p1_2d.y) {
+      xLeft = interpolate(p0_2d.y, p0_2d.x, p1_2d.y, p1_2d.x, y);
+      xRight = interpolate(p0_2d.y, p0_2d.x, p2_2d.y, p2_2d.x, y);
+      zLeft = interpolateZ(p0_2d.y, v0.z, p1_2d.y, v1.z, y);
+      zRight = interpolateZ(p0_2d.y, v0.z, p2_2d.y, v2.z, y);
+
+      worldLeft = interpolatePoint(t0, t1, p0_2d.y, p1_2d.y, y);
+      worldRight = interpolatePoint(t0, t2, p0_2d.y, p2_2d.y, y);
+    } else {
+      xLeft = interpolate(p1_2d.y, p1_2d.x, p2_2d.y, p2_2d.x, y);
+      xRight = interpolate(p0_2d.y, p0_2d.x, p2_2d.y, p2_2d.x, y);
+      zLeft = interpolateZ(p1_2d.y, v1.z, p2_2d.y, v2.z, y);
+      zRight = interpolateZ(p0_2d.y, v0.z, p2_2d.y, v2.z, y);
+
+      worldLeft = interpolatePoint(t1, t2, p1_2d.y, p2_2d.y, y);
+      worldRight = interpolatePoint(t0, t2, p0_2d.y, p2_2d.y, y);
+    }
+
+    if (xLeft > xRight) {
+      std::swap(xLeft, xRight);
+      std::swap(zLeft, zRight);
+      std::swap(worldLeft, worldRight);
+    }
+
+int xStart = std::max(minXClamped, static_cast<int>(std::floor(xLeft)));
+int xEnd = std::min(maxXClamped, static_cast<int>(std::ceil(xRight) +1.));
+
+    if (xEnd - xStart <= 1)
+      continue;
+\end{lstlisting}
+\newpage
+\begin{lstlisting}[caption={Продолжение Растеризация треугольника}, label={lst:render_triangle3}]
+    double z = zLeft;
+    double dz = (xEnd >= xStart) ? (zRight - zLeft) / (xRight - xLeft) : 0;
+
+    Point3D world = worldLeft;
+    Point3D d_world = (xEnd > xStart)
+                          ? (worldRight - worldLeft) / (xRight - xLeft)
+                          : Point3D();
+
+    if (std::ceil(xLeft) < xStart) {
+      z += dz * (xStart - xLeft);
+      world += d_world * (xStart - xLeft);
+    }
+
+    for (int x = xStart; x < xEnd; ++x) {
+      depth[y - minYClamped][x - minXClamped] = z;
+      if (smap.isValid()) {
+        brightness[y - minYClamped][x - minXClamped] =
+            smap.getBrightness(world);
+      }
+      z += dz;
+      world += d_world;
+    }
+  }
+
+  return res;
+}
+\end{lstlisting}
+\fi
+
+\begin{lstlisting}[caption={Метод фиксирования состояния ячейки класса QWFC}, label={lst:qwfcoll}]
+void QWFC::collapseCell(int x, int y) {
+  if (x < 0 || y < 0 || x >= width || y >= height)
+    return;
+  auto &possibleValues = matrix[y][x];
+  if (possibleValues.size() == 1)
+    return;
+
+  double totalProbability = 0.0;
+  for (const auto &value : possibleValues) {
+    totalProbability += cells.at(value).getProbability();
+  }
+
+  if (totalProbability < MyMath::EPS) {
+    throw std::runtime_error("Can not continue.");
+  }
+
+  double random = static_cast<double>(rand()) / static_cast<double>(RAND_MAX) *
+                  totalProbability;
+  double cumulativeProbability = 0.0;
+  int chosenValue = *possibleValues.begin();
+
+  for (const auto &value : possibleValues) {
+    cumulativeProbability += cells.at(value).getProbability();
+    if (random <= cumulativeProbability) {
+      chosenValue = value;
+      break;
+    }
+  }
+
+  possibleValues.clear();
+  possibleValues.insert(chosenValue);
+}
+\end{lstlisting}
+
+% \begin{lstlisting}[caption={}, label={lst:}]
+% \end{lstlisting}
+
+\renewcommand\thechapter{B}
+
+\ssr{ПРИЛОЖЕНИЕ B}

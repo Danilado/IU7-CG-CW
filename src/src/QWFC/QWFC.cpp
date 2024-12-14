@@ -130,12 +130,7 @@ void QWFC::propagateConstraints(int x, int y) {
     if (visited.contains({cx, cy}))
       continue;
 
-    // std::cout << "propagating for " << cx << " " << cy << " is ";
-
     const auto &currentValues = matrix[cy][cx];
-    // for (const auto &value : currentValues)
-    //   std::cout << value;
-    // std::cout << std::endl;
 
     for (const auto &dir :
          {Direction::up, Direction::right, Direction::down, Direction::left}) {
@@ -149,27 +144,15 @@ void QWFC::propagateConstraints(int x, int y) {
       if (nx < 0 || nx >= width || ny < 0 || ny >= height)
         continue;
 
-      // std::cout << "handling " << nx << " " << ny << std::endl;
-
       std::set<int> &neighborValues = matrix[ny][nx];
       if (neighborValues.size() == 1)
         continue;
-
-      // std::cout << "current: ";
-      // for (const auto &value : neighborValues)
-      //   std::cout << value;
-      // std::cout << std::endl;
 
       std::set<int> compatibleValues;
       for (const auto &value : currentValues) {
         auto compats = cells.at(value).getCompatibleNeighbors(dir);
         compatibleValues.insert(compats.begin(), compats.end());
       }
-
-      // std::cout << "compatible: ";
-      // for (const auto &value : compatibleValues)
-      //   std::cout << value;
-      // std::cout << std::endl;
 
       std::vector<int> res;
       res.resize(cells.size());
@@ -180,11 +163,6 @@ void QWFC::propagateConstraints(int x, int y) {
 
       if (res.size() == matrix[ny][nx].size())
         continue;
-
-      // std::cout << "result: ";
-      // for (const auto &value : res)
-      //   std::cout << value;
-      // std::cout << std::endl;
 
       matrix[ny][nx].clear();
       matrix[ny][nx].insert(res.begin(), res.end());

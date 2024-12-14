@@ -29,7 +29,7 @@ public:
       cross.addConstraint(4, Direction::left, 1.);
     }
 
-    Cell hor(1, roadprob * .5);
+    Cell hor(1, roadprob * .25);
     {
       hor.addConstraint(0, Direction::left, 1.);
       hor.addConstraint(1, Direction::left, 1.);
@@ -56,7 +56,7 @@ public:
       hor.addConstraint(9, Direction::down, 1.);
     }
 
-    Cell ver(2, roadprob * .5);
+    Cell ver(2, roadprob * .25);
     {
       ver.addConstraint(0, Direction::up, 1.);
       ver.addConstraint(2, Direction::up, 1.);
