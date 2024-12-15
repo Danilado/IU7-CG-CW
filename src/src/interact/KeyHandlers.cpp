@@ -62,19 +62,19 @@ void MainWindow::handleKey(Qt::Key key) {
   } break;
   case (Key::Key_I): {
     qDebug() << "I";
-    rotateCamera(0, -MyMath::PI / 180.);
+    rotateCamera(0, -MyMath::PI / 180. * 2.);
   } break;
   case (Key::Key_L): {
     qDebug() << "L";
-    rotateCamera(MyMath::PI / 180., 0.);
+    rotateCamera(MyMath::PI / 180. * 2., 0.);
   } break;
   case (Key::Key_K): {
     qDebug() << "K";
-    rotateCamera(0, MyMath::PI / 180.);
+    rotateCamera(0, MyMath::PI / 180. * 2.);
   } break;
   case (Key::Key_J): {
     qDebug() << "J";
-    rotateCamera(-MyMath::PI / 180., 0.);
+    rotateCamera(-MyMath::PI / 180. * 2., 0.);
   } break;
   default: {
   } break;
