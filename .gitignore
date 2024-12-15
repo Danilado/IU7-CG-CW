@@ -10,3 +10,5 @@ svg-inkscape
 
 build
 .vscode
+
+**/docs/data/*.txt
